@@ -1,0 +1,216 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  username String
+
+  email            String            @unique
+  password         String
+  role             UserRole          @default(USER)
+  fcpmToken        String?
+  profileImage     String?           @default("")
+  status           UserStatus        @default(PENDING)
+  CreateEvent      Event[]
+  EventLocation    EventLocation[]
+  Booking          Booking[]
+  Ticket           Ticket[]
+  LiveEntry        LiveEntry[]
+  Voucher          Voucher[]
+  CustomerProfile  CustomerProfile?
+  OrganizerProfile OrganizerProfile?
+
+  @@map("users")
+}
+
+model CustomerProfile {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @unique @db.ObjectId
+  user             User     @relation(fields: [userId], references: [id])
+  stripeCustomerId String   @unique
+  createdAt        DateTime @default(now())
+}
+
+model OrganizerProfile {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id])
+  stripeAccountId String?  @unique
+  // isOnboarded     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model OtpModel {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  email     String    @unique
+
+  code      String
+  otpExpiry DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("otpModel")
+}
+
+model Event {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String @db.ObjectId
+  eventName String
+  eventType String
+
+  selectedDate DateTime
+
+  startTime DateTime
+  endTime   DateTime
+
+  eventDesc        String
+  vipSeatCount     Int    @default(0)
+  economySeatCount Int    @default(0)
+  vipSeatPrice     Float  @default(0)
+  economySeatPrice Float  @default(0)
+  enrollCount      Int?   @default(0)
+
+  user          User            @relation(fields: [userId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  eventLocation EventLocation[]
+  Booking       Booking[]
+  Ticket        Ticket[]
+  LiveEntry     LiveEntry[]
+  Voucher       Voucher[]
+
+  @@index([userId])
+  @@map("event")
+}
+
+model EventLocation {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventId   String   @unique @db.ObjectId
+  event     Event    @relation(fields: [eventId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @db.ObjectId
+  city      String
+  state     String
+  zipCode   String
+  lat       Float
+  long      Float
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+
+  @@map("event_location")
+}
+
+model Booking {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String @db.ObjectId
+  user    User   @relation(fields: [userId], references: [id])
+  eventId String @db.ObjectId
+  event   Event  @relation(fields: [eventId], references: [id])
+
+  paymentIntentId String
+  paymentType     String
+  totalSeat       Int?
+  ticketType      TicketType?
+  totalPrice      Float?
+
+  isLiveEntry Boolean    @default(false)
+  liveEntryId String?    @db.ObjectId
+  liveEntry   LiveEntry? @relation(fields: [liveEntryId], references: [id])
+
+  isPaid    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Ticket    Ticket[]
+  Voucher   Voucher[]
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Ticket {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId  String       @db.ObjectId
+  booking    Booking      @relation(fields: [bookingId], references: [id])
+  userId     String       @db.ObjectId
+  user       User         @relation(fields: [userId], references: [id])
+  eventId    String       @db.ObjectId
+  event      Event        @relation(fields: [eventId], references: [id])
+  ticketType TicketType
+  // seatNumber String       @unique
+  qrCode     String
+  status     TicketStatus @default(VALID)
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+}
+
+model LiveEntry {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  eventId     String    @db.ObjectId
+  event       Event     @relation(fields: [eventId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+  entryTime   DateTime
+  exitTime    DateTime?
+  totalTime   Int?
+  amountToPay Float?
+  isPaid      Boolean   @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Booking   Booking[]
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Voucher {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id])
+  eventId   String  @db.ObjectId
+  event     Event   @relation(fields: [eventId], references: [id])
+  bookingId String  @db.ObjectId
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  amountPaid  Float
+  issuedAt    DateTime @default(now())
+  voucherCode String   @unique
+  @@index([userId])
+   @@index([eventId])
+}
+
+enum TicketType {
+  VIP
+  ECONOMY
+  LIVEENTRY
+}
+
+enum TicketStatus {
+  VALID
+  USED
+  CANCELED
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+  PENDING
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+  USER
+  ORGANIZER
+}
