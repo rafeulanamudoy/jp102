@@ -36,4 +36,50 @@ const bookingLive=async (bookingData: any) => {
   return payment
 };
 
-export const bookingService = { createBooking ,bookingLive};
+const getUserTicket=async(ticketId:string)=>{
+
+
+  const result=await  prisma.ticket.findUnique({
+    where:{
+    
+      id:ticketId
+    },
+    
+    include:{
+      booking:{
+        select:{
+          totalSeat:true
+        }
+      },
+      event:{
+        select:{
+          startTime:true,
+          selectedDate:true
+        }
+      }
+    }
+    
+  })
+  return result
+}
+const getUserVoucher=async(voucherId:string)=>{
+
+
+  const result=await  prisma.voucher.findUnique({
+    where:{
+    
+      id:voucherId
+    }, include:{
+     
+      event:{
+        select:{
+          startTime:true,
+          selectedDate:true
+        }
+      }
+    }
+    
+  })
+  return result
+}
+export const bookingService = { createBooking ,bookingLive,getUserTicket,getUserVoucher};

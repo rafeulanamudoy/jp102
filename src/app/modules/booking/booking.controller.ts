@@ -38,8 +38,41 @@ const bookingLive = catchAsync(async (req: any, res: Response) => {
   });
 });
 
+const getUserTicket = catchAsync(async (req: any, res: Response) => {
 
+  const user = req.user;
+  const ticketId=req.params.ticketId
+  console.log(user,"check user")
+  console.log(ticketId,"check ticket id")
+
+  const data=await bookingService.getUserTicket(ticketId)
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Singe voucher Get Successfully",
+    data: data,
+  });
+});
+const getUserVoucher= catchAsync(async (req: any, res: Response) => {
+
+  const user = req.user;
+  const voucherId=req.params.voucherId
+
+  console.log(voucherId,"check ticket id")
+
+  const data=await bookingService.getUserVoucher(voucherId)
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Singe Ticket Get Successfully",
+    data: data,
+  });
+});
 export const bookingController = {
   createBooking,
-  bookingLive
+  bookingLive,
+  getUserTicket,
+  getUserVoucher
 }

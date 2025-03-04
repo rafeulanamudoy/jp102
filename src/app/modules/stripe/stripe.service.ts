@@ -84,7 +84,12 @@ const createPaymentIntentIntoDB = async (
   const platformFee = Math.round(totalAmount * 0.2);
   const amountForMerchant = totalAmount - platformFee;
   const ticketId = new ObjectId().toString();
-  const qrCode = await generateQRCode(ticketId);
+  const qrvalue = {
+    id: ticketId,
+    userId: payload.userId,
+    email: payload.email,
+  };
+  const qrCode = await generateQRCode(qrvalue);
   const paymentIntent = await stripe.paymentIntents.create({
     amount: totalAmount,
     currency: "usd",
@@ -105,9 +110,9 @@ const createPaymentIntentIntoDB = async (
       allow_redirects: "never",
     },
   });
-
-  if (paymentIntent.status === "succeeded") {
-    const result = await prisma.booking.create({
+  let result;
+  if (paymentIntent.status === "succeeded" && !payload.isLiveEntry) {
+    result = await prisma.booking.create({
       data: {
         paymentType: payload.paymentType,
         eventId: payload.eventId,
@@ -131,12 +136,34 @@ const createPaymentIntentIntoDB = async (
         },
       },
     });
+  } else if (paymentIntent.status === "succeeded" && payload.isLiveEntry) {
+    result = await prisma.booking.create({
+      data: {
+        paymentType: payload.paymentType,
+        eventId: payload.eventId,
+        totalPrice: payload.totalPrice,
+        totalSeat: payload.totalSeat,
+        ticketType: payload.ticketType,
+        userId: payload.userId,
 
-
-    return result;
+        paymentIntentId: paymentIntent.id,
+        isPaid: true,
+        Voucher: {
+          create: {
+            id: ticketId,
+            userId: payload.userId,
+            eventId: payload.eventId,
+            amountPaid: payload.totalPrice,
+            voucherCode: qrCode,
+            totalTime:payload.totalTime
+          },
+        },
+      },
+    });
   } else {
     throw new ApiError(400, "Payment was not successful.");
   }
+  return { entryId: ticketId, result: result };
 };
 
 // get stripe card

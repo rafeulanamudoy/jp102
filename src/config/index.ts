@@ -28,4 +28,8 @@ export default {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET_KEY,
   
   },
+  twillio:{
+    authToken:process.env.TWILLIO_AUTH_TOKEN,
+    accountId:process.env.TWILLIO_ACCOUNT_SID
+  }
 };

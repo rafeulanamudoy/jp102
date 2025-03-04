@@ -21,7 +21,7 @@ model User {
   EventLocation    EventLocation[]
   Booking          Booking[]
   Ticket           Ticket[]
-  LiveEntry        LiveEntry[]
+  // LiveEntry        LiveEntry[]
   Voucher          Voucher[]
   CustomerProfile  CustomerProfile?
   OrganizerProfile OrganizerProfile?
@@ -82,7 +82,7 @@ model Event {
   eventLocation EventLocation[]
   Booking       Booking[]
   Ticket        Ticket[]
-  LiveEntry     LiveEntry[]
+  // LiveEntry     LiveEntry[]
   Voucher       Voucher[]
 
   @@index([userId])
@@ -123,8 +123,8 @@ model Booking {
   totalPrice      Float?
 
   isLiveEntry Boolean    @default(false)
-  liveEntryId String?    @db.ObjectId
-  liveEntry   LiveEntry? @relation(fields: [liveEntryId], references: [id])
+  // liveEntryId String?    @db.ObjectId
+  // liveEntry   LiveEntry? @relation(fields: [liveEntryId], references: [id])
 
   isPaid    Boolean   @default(false)
   createdAt DateTime  @default(now())
@@ -154,24 +154,24 @@ model Ticket {
   @@index([userId])
 }
 
-model LiveEntry {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String    @db.ObjectId
-  eventId     String    @db.ObjectId
-  event       Event     @relation(fields: [eventId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
-  entryTime   DateTime
-  exitTime    DateTime?
-  totalTime   Int?
-  amountToPay Float?
-  isPaid      Boolean   @default(false)
+// model LiveEntry {
+//   id          String    @id @default(auto()) @map("_id") @db.ObjectId
+//   userId      String    @db.ObjectId
+//   eventId     String    @db.ObjectId
+//   event       Event     @relation(fields: [eventId], references: [id])
+//   user        User      @relation(fields: [userId], references: [id])
+//   entryTime   DateTime
+//   exitTime    DateTime?
+//   totalTime   Int?
+//   amountToPay Float?
+//   isPaid      Boolean   @default(false)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Booking   Booking[]
-  @@index([userId])
-  @@index([eventId])
-}
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//   Booking   Booking[]
+//   @@index([userId])
+//   @@index([eventId])
+// }
 
 model Voucher {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
@@ -181,7 +181,7 @@ model Voucher {
   event     Event   @relation(fields: [eventId], references: [id])
   bookingId String  @db.ObjectId
   booking   Booking @relation(fields: [bookingId], references: [id])
-
+  totalTime String
   amountPaid  Float
   issuedAt    DateTime @default(now())
   voucherCode String   @unique
