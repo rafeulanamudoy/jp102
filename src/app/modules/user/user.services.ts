@@ -22,27 +22,26 @@ const createUserIntoDB = async (payload: User) => {
   const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
   // Create a new user in the database
   if (payload.role === UserRole.ORGANIZER) {
-   
     await prisma.user.create({
       data: {
         ...payload,
         password: hashedPassword,
       },
     });
-    return
-  }
-  const customer = await stripeService.createCustomer(payload);
-  await prisma.user.create({
-    data: {
-      ...payload,
-      password: hashedPassword,
-      CustomerProfile: {
-        create: {
-          stripeCustomerId: customer.id,
+  } else {
+    const customer = await stripeService.createCustomer(payload);
+    await prisma.user.create({
+      data: {
+        ...payload,
+        password: hashedPassword,
+        CustomerProfile: {
+          create: {
+            stripeCustomerId: customer.id,
+          },
         },
       },
-    },
-  });
+    });
+  }
 
   const html = `<!DOCTYPE html>
    <html lang="en">
