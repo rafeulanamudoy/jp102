@@ -29,6 +29,7 @@ const createUserIntoDB = async (payload: User) => {
         password: hashedPassword,
       },
     });
+    return
   }
   const customer = await stripeService.createCustomer(payload);
   await prisma.user.create({
