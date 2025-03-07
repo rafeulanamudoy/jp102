@@ -18,8 +18,7 @@ const createUserIntoDB = async (payload: User) => {
   if (existingUser) {
     throw new ApiError(409, "username already exist!");
   }
-  const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
-  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
   // Create a new user in the database
   if (payload.role === UserRole.ORGANIZER) {
     await prisma.user.create({
@@ -42,6 +41,9 @@ const createUserIntoDB = async (payload: User) => {
       },
     });
   }
+ 
+  const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
   const html = `<!DOCTYPE html>
    <html lang="en">

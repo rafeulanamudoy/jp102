@@ -70,9 +70,11 @@ const getUserVoucher= catchAsync(async (req: any, res: Response) => {
     data: data,
   });
 });
+
 export const bookingController = {
   createBooking,
   bookingLive,
   getUserTicket,
-  getUserVoucher
+  getUserVoucher,
+
 }

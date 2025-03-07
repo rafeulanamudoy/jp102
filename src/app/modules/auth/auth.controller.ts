@@ -10,6 +10,7 @@ import config from "../../../config";
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const result = await authService.loginUserIntoDB(req.body);
 
+
   res.cookie("accessToken", result.accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

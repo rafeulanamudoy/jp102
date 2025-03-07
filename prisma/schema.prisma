@@ -121,7 +121,7 @@ model Booking {
   totalSeat       Int?
   ticketType      TicketType?
   totalPrice      Float?
-
+  bookingType BookingType @default(ACTIVE)
   isLiveEntry Boolean    @default(false)
   // liveEntryId String?    @db.ObjectId
   // liveEntry   LiveEntry? @relation(fields: [liveEntryId], references: [id])
@@ -144,6 +144,7 @@ model Ticket {
   eventId    String       @db.ObjectId
   event      Event        @relation(fields: [eventId], references: [id])
   ticketType TicketType
+
   // seatNumber String       @unique
   qrCode     String
   status     TicketStatus @default(VALID)
@@ -194,7 +195,11 @@ enum TicketType {
   ECONOMY
   LIVEENTRY
 }
-
+enum BookingType {
+  ACTIVE
+  COMPLETED
+  CANCELED
+}
 enum TicketStatus {
   VALID
   USED

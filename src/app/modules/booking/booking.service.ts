@@ -2,6 +2,9 @@ import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiErrors";
 import prisma from "../../../shared/prisma";
 import { stripeService } from "../stripe/stripe.service";
+import { IpaginationOptions } from "../../../helpers/paginationOptions";
+import { paginationHelpers } from "../../../helpers/paginationHelper";
+import { Prisma } from "@prisma/client";
 
 const createBooking = async (bookingData: any) => {
   const customerAccount = await prisma.customerProfile.findUnique({
@@ -82,4 +85,80 @@ const getUserVoucher=async(voucherId:string)=>{
   })
   return result
 }
-export const bookingService = { createBooking ,bookingLive,getUserTicket,getUserVoucher};
+const getUserBooking = async (
+  filters: any,
+  paginationOptions: IpaginationOptions,
+  userId: string
+) => {
+  const { skip, limit, page, sortBy, sortOrder } =
+    paginationHelpers.calculatePagination(paginationOptions);
+
+  const { query, ...filtersData } = filters;
+  let finalLimit = limit;
+  let orderByCondition = { [sortBy]: sortOrder };
+
+  const andCondition: Prisma.EventWhereInput[] = [];
+
+  if (filtersData.type) {
+    andCondition.push({ eventType: { in: JSON.parse(filtersData.type) } });
+  }
+
+
+  const currentTime = new Date();
+  let bookingFilter: Prisma.BookingWhereInput = {};
+
+  if (query === "completed") {
+    bookingFilter = {
+      event: {
+        endTime: { lt: currentTime }, 
+      },
+    };
+  } else if (query === "active") {
+    bookingFilter = {
+      event: {
+        startTime: { gt: currentTime },
+      },
+    };
+  }
+
+  const result = await prisma.booking.findMany({
+    where: {
+      userId: userId,
+      ...bookingFilter, 
+    },
+    skip,
+    take: finalLimit,
+    orderBy: orderByCondition,
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+        },
+      },
+      event: {
+        select: {
+          id: true,
+          eventName: true,
+          startTime: true,
+          endTime: true,
+        },
+      },
+    },
+  });
+
+  const count = await prisma.booking.count({
+    where: {
+      userId: userId,
+      ...bookingFilter,
+    },
+  });
+
+  return {
+    meta: { page, limit: finalLimit, count },
+    data: result,
+  };
+};
+
+export const bookingService = { createBooking ,bookingLive,getUserTicket,getUserVoucher,getUserBooking};
