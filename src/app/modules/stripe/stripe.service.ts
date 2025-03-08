@@ -61,6 +61,8 @@ const createPaymentIntentIntoDB = async (
     throw new ApiError(400, "Amount is required");
   }
 
+ 
+
   if (!isValidAmount(payload.totalPrice)) {
     throw new ApiError(
       400,

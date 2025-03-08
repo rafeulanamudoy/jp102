@@ -4,6 +4,7 @@ import { authRoute } from "../modules/auth/auth.routes";
 import { eventRoute } from "../modules/event/event.route";
 import { stripeRoute } from "../modules/stripe/stripe.route";
 import { bookingRoute } from "../modules/booking/booking.route";
+import { paypalRoute } from "../modules/paypal/paypal.route";
 
 const router = express.Router();
 
@@ -18,18 +19,22 @@ const moduleRoutes = [
     route: authRoute,
   },
   {
-    path:"/event",
-    route:eventRoute
-  },{
-    path:"/stripe",
-    route:stripeRoute
+    path: "/event",
+    route: eventRoute,
   },
   {
-    
-      path:"/booking",
-      route:bookingRoute
-    
-  }
+    path: "/stripe",
+    route: stripeRoute,
+  },
+  {
+    path: "/paypal",
+    route: paypalRoute,
+  },
+
+  {
+    path: "/booking",
+    route: bookingRoute,
+  },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

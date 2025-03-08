@@ -28,6 +28,12 @@ export default {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET_KEY,
   
   },
+  paypal: {
+    clientId: process.env.PAYPAL_CLIENT_ID,
+    clientSecret: process.env.PAYPAL_SECRET_ID,
+    paypal_base_url:process.env.PAYPAL_BASE_URL
+  
+  },
   twillio:{
     authToken:process.env.TWILLIO_AUTH_TOKEN,
     accountId:process.env.TWILLIO_ACCOUNT_SID

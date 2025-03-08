@@ -4,7 +4,8 @@ import prisma from "../../../shared/prisma";
 import { stripeService } from "../stripe/stripe.service";
 import { IpaginationOptions } from "../../../helpers/paginationOptions";
 import { paginationHelpers } from "../../../helpers/paginationHelper";
-import { Prisma } from "@prisma/client";
+import { BookingType, Prisma } from "@prisma/client";
+import { json } from "stream/consumers";
 
 const createBooking = async (bookingData: any) => {
   const customerAccount = await prisma.customerProfile.findUnique({
@@ -94,36 +95,42 @@ const getUserBooking = async (
     paginationHelpers.calculatePagination(paginationOptions);
 
   const { query, ...filtersData } = filters;
+  console.log(filtersData,"check filterData")
+  console.log(query,"check query")
   let finalLimit = limit;
   let orderByCondition = { [sortBy]: sortOrder };
 
   const andCondition: Prisma.EventWhereInput[] = [];
 
-  if (filtersData.type) {
-    andCondition.push({ eventType: { in: JSON.parse(filtersData.type) } });
-  }
+
 
 
   const currentTime = new Date();
   let bookingFilter: Prisma.BookingWhereInput = {};
 
-  if (query === "completed") {
+
+  if (filtersData.completed && JSON.parse(filtersData.completed)) {
     bookingFilter = {
       event: {
-        endTime: { lt: currentTime }, 
+        endTime: { lt: currentTime },
       },
     };
-  } else if (query === "active") {
+  } else if (filtersData.active && JSON.parse(filtersData.active)) {
     bookingFilter = {
       event: {
         startTime: { gt: currentTime },
       },
+    };
+  } else if (filtersData.cancel && JSON.parse(filtersData.cancel)) {
+    bookingFilter = {
+      bookingType: BookingType.CANCELED,
     };
   }
 
   const result = await prisma.booking.findMany({
     where: {
       userId: userId,
+    
       ...bookingFilter, 
     },
     skip,

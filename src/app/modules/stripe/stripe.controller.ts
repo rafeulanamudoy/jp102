@@ -94,7 +94,7 @@ const handleWebHook = catchAsync(async (req: any, res: any) => {
 // payment intent
 const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
   const stripeCustomerId = req.user.stripeCustomerId as string;
- 
+ console.log(stripeCustomerId,"check stripe customer id")
 
   const payload = req.body;
 

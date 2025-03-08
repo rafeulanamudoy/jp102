@@ -120,16 +120,16 @@ const getAllEvents = async (
     });
   }
 
-  if (filtersData.type) {
+  if ( JSON.parse(filtersData.type)) {
     andCondition.push({ eventType: { in: JSON.parse(filtersData.type) } });
   }
 
-  if (filtersData.featured) {
+  if (JSON.parse(filtersData.featured)) {
     andCondition.push({ selectedDate: { gte: startOfDay(new Date()) } });
     orderByCondition = { selectedDate: "asc" };
   }
 
-  if (filtersData.popular) {
+  if (JSON.parse(filtersData.popular)) {
     orderByCondition = { enrollCount: "desc" };
   }
 

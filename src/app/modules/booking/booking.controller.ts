@@ -8,6 +8,9 @@ import sendResponse from "../../../shared/sendResponse";
 
 import { Response } from "express";
 import { bookingService } from "./booking.service";
+import pick from "../../../shared/pick";
+import { paginationFileds } from "../../../helpers/paginationOptions";
+import { filterableField } from "../../../helpers/searchableFields";
 
 
 const createBooking = catchAsync(async (req: any, res: Response) => {
@@ -23,6 +26,7 @@ const createBooking = catchAsync(async (req: any, res: Response) => {
     data: data,
   });
 });
+
 
 const bookingLive = catchAsync(async (req: any, res: Response) => {
 
@@ -42,8 +46,7 @@ const getUserTicket = catchAsync(async (req: any, res: Response) => {
 
   const user = req.user;
   const ticketId=req.params.ticketId
-  console.log(user,"check user")
-  console.log(ticketId,"check ticket id")
+
 
   const data=await bookingService.getUserTicket(ticketId)
 
@@ -59,7 +62,7 @@ const getUserVoucher= catchAsync(async (req: any, res: Response) => {
   const user = req.user;
   const voucherId=req.params.voucherId
 
-  console.log(voucherId,"check ticket id")
+
 
   const data=await bookingService.getUserVoucher(voucherId)
 
@@ -70,11 +73,29 @@ const getUserVoucher= catchAsync(async (req: any, res: Response) => {
     data: data,
   });
 });
+const getUserBooking = catchAsync(async (req: any, res: Response) => {
+
+
+  const filters = pick(req.query, filterableField);
+  console.log(filters,"check filters")
+  const paginationOptions = pick(req.query, paginationFileds);
+  const user=req.user
+  const data = await bookingService.getUserBooking(filters, paginationOptions,user.id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "user booking get successfully",
+    data: data,
+  });
+});
+
 
 export const bookingController = {
   createBooking,
   bookingLive,
   getUserTicket,
   getUserVoucher,
+  getUserBooking
 
 }
