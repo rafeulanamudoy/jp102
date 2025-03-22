@@ -7,6 +7,7 @@ import { generateNewAccountLink } from "../../../utilities/generateLink";
 import { ObjectId } from "mongodb";
 import httpStatus from "http-status";
 import { generateQRCode } from "../../../helpers/generateQrCode";
+import { BookingType } from "@prisma/client";
 
 const stripe = new Stripe(config.stripe.secretKey as string);
 
@@ -207,6 +208,32 @@ const deleteStripeCardIntoDB = async (paymentMethodId: string) => {
   return result;
 };
 
+const refundPayment = async (booking: any) => {
+  try {
+   
+   
+   if(!booking.paymentIntentId){
+
+    throw new ApiError(400, "Payment intent is required");
+   }
+    const refund = await stripe.refunds.create({
+      payment_intent: booking.paymentIntentId as string,
+    });
+    await prisma.booking.update({
+      where:{
+        id:booking.id
+      },
+      data:{
+        isPaid:false,
+        paymentType:BookingType.CANCELED
+      }
+     })
+    return refund;
+  } catch (error) {
+    console.error("Error during refund:", error);
+    throw new Error("Could not process refund");
+  }
+};
 export const stripeService = {
   createPaymentIntentIntoDB,
   getStripeCardIntoDB,
@@ -214,4 +241,5 @@ export const stripeService = {
   deleteStripeCardIntoDB,
   createCustomer,
   createMerchentAccount,
+  refundPayment
 };

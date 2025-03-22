@@ -167,5 +167,20 @@ const getUserBooking = async (
     data: result,
   };
 };
+const cancelBooking = async (userId: string,bookingId:string) => {
 
-export const bookingService = { createBooking ,bookingLive,getUserTicket,getUserVoucher,getUserBooking};
+
+  const getBooking=await  prisma.booking.findUnique({
+    where:{
+      id:bookingId,
+      userId:userId
+    }
+  })
+
+
+  const result=await stripeService.refundPayment(getBooking as any)
+  return result
+
+}
+
+export const bookingService = { createBooking ,bookingLive,getUserTicket,getUserVoucher,getUserBooking,cancelBooking};

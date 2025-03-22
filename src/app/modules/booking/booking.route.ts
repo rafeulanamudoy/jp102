@@ -12,4 +12,5 @@ router.post("/booking-live",auth(),bookingController.bookingLive)
 router.get("/get-ticket/:ticketId",auth(),bookingController.getUserTicket)
 router.get("/get-voucher/:voucherId",bookingController.getUserVoucher)
 router.get("/get-booking",auth(),bookingController.getUserBooking)
+router.post("/cancel-booking/:bookingId",auth(),bookingController.cancelBooking)
 export const bookingRoute = router;
